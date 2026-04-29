@@ -3,6 +3,7 @@ export enum MessageActions {
   CLOSE,
   OPEN_IFRAME_POPUP,
   CLOSE_IFRAME_POPUP,
+  OPEN_IN_BACKGROUND,
 }
 
 export type Message = {
@@ -32,13 +33,13 @@ export enum WindowMode {
   POPUP = 0b10,
 }
 
-export const TRIGGER_KEY_STORAGE_KEY = "local:triggerKey";
+export const TRIGGER_KEYS_STORAGE_KEY = "local:triggerKeys";
 
 export enum TriggerKey {
-  SHIFT = "shift",
-  ALT = "alt",
-  CTRL = "ctrl",
-  META = "meta",
+  SHIFT = 0b1,
+  ALT = 0b10,
+  CTRL = 0b100,
+  META = 0b1000,
 }
 
 export const OPEN_MODE_STORAGE_KEY = "local:openMode";

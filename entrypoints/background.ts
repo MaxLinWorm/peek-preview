@@ -30,6 +30,11 @@ export default defineBackground(() => {
           width: (width * (percentage / 100)) | 0,
           height: (height * (percentage / 100)) | 0,
         });
+      } else if (message.action === MessageActions.OPEN_IN_BACKGROUND) {
+        browser.tabs.create({
+          url: (message as OpenMessage).url,
+          active: false,
+        });
       } else if (message.action === MessageActions.CLOSE) {
         if (sender.tab) {
           browser.windows.remove(sender.tab.windowId);

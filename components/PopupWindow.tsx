@@ -31,6 +31,14 @@ export default function PopupWindow({
       if (event.key === "Escape") {
         closePopup();
       }
+      if (event.metaKey && event.key === "o") {
+        event.preventDefault();
+        browser.runtime.sendMessage({
+          action: MessageActions.OPEN_IN_BACKGROUND,
+          url,
+        });
+        closePopup();
+      }
     }
 
     window.addEventListener("keydown", handleKeydown);
@@ -89,7 +97,13 @@ export default function PopupWindow({
             </div>
             <div
               title={t("iframeActionOpenInTab")}
-              onClick={() => window.open(url)}
+              onClick={() => {
+                browser.runtime.sendMessage({
+                  action: MessageActions.OPEN_IN_BACKGROUND,
+                  url,
+                });
+                closePopup();
+              }}
             >
               <ExternalLink className="w-8 h-8 cursor-pointer text-white" />
             </div>

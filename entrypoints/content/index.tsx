@@ -11,7 +11,7 @@ import {
   MESSAGE_CHANNEL,
   WINDOW_MODE_STORAGE_KEY,
   WindowMode,
-  TRIGGER_KEY_STORAGE_KEY,
+  TRIGGER_KEYS_STORAGE_KEY,
   TriggerKey,
 } from "@/utils/const";
 import ReactDOM from "react-dom/client";
@@ -48,8 +48,8 @@ export default defineContentScript({
       const closeMode = await storage.getItem<number>(CLOSE_MODE_STORAGE_KEY, {
         fallback: CloseMode.BOTH,
       });
-      const triggerKey = await storage.getItem<string>(
-        TRIGGER_KEY_STORAGE_KEY,
+      const triggerKeys = await storage.getItem<number>(
+        TRIGGER_KEYS_STORAGE_KEY,
         {
           fallback: TriggerKey.SHIFT,
         }
@@ -84,24 +84,12 @@ export default defineContentScript({
         // open links with shortcut key
         if (openMode && openMode & OpenMode.SHORTCUT_CLICK) {
           const onClick = async (event: MouseEvent) => {
-            let triggered = false;
-            switch (triggerKey) {
-              case TriggerKey.SHIFT:
-                triggered = event.shiftKey;
-                break;
-              case TriggerKey.ALT:
-                triggered = event.altKey;
-                break;
-              case TriggerKey.CTRL:
-                triggered = event.ctrlKey;
-                break;
-              case TriggerKey.META:
-                triggered = event.metaKey;
-                break;
-              default:
-                triggered = event.shiftKey;
-                break;
-            }
+            if (!triggerKeys) return;
+            let triggered = true;
+            if (triggerKeys & TriggerKey.SHIFT) triggered = triggered && event.shiftKey;
+            if (triggerKeys & TriggerKey.ALT) triggered = triggered && event.altKey;
+            if (triggerKeys & TriggerKey.CTRL) triggered = triggered && event.ctrlKey;
+            if (triggerKeys & TriggerKey.META) triggered = triggered && event.metaKey;
             if (!triggered) return;
             ui = await openPopup(event, ctx);
           };
@@ -133,7 +121,7 @@ export default defineContentScript({
     storage.watch<any>(CLOSE_MODE_STORAGE_KEY, async () => {
       await mountEvents();
     });
-    storage.watch<any>(TRIGGER_KEY_STORAGE_KEY, async () => {
+    storage.watch<any>(TRIGGER_KEYS_STORAGE_KEY, async () => {
       await mountEvents();
     });
 

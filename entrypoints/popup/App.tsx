@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -9,7 +10,7 @@ import {
   WindowMode,
   STORE_URLS,
   TriggerKey,
-  TRIGGER_KEY_STORAGE_KEY,
+  TRIGGER_KEYS_STORAGE_KEY,
 } from "@/utils/const";
 import logo from "/icon/48.png";
 import { Blocks, Bug } from "lucide-react";
@@ -19,7 +20,7 @@ function App() {
   const [openMode, setOpenMode] = useState(OpenMode.BOTH);
   const [closeMode, setCloseMode] = useState(CloseMode.BOTH);
   const [percent, setPercent] = useState(DEFAULT_PERCENTAGE);
-  const [triggerKey, setTriggerKey] = useState(TriggerKey.SHIFT);
+  const [triggerKeys, setTriggerKeys] = useState<number>(TriggerKey.SHIFT);
 
   const t = browser.i18n.getMessage;
 
@@ -38,8 +39,8 @@ function App() {
     storage.getItem<number>(PERCENTAGE_STORAGE_KEY).then((value) => {
       if (value) setPercent(value);
     });
-    storage.getItem<string>(TRIGGER_KEY_STORAGE_KEY).then((value) => {
-      if (value) setTriggerKey(value as TriggerKey);
+    storage.getItem<number>(TRIGGER_KEYS_STORAGE_KEY).then((value) => {
+      if (value) setTriggerKeys(value);
     });
   });
 
@@ -55,10 +56,11 @@ function App() {
     setOpenMode(v);
   }
 
-  async function handleChangeTriggerKey(value: string) {
-    const v = value as TriggerKey;
-    await storage.setItem<string>(TRIGGER_KEY_STORAGE_KEY, v);
-    setTriggerKey(v);
+  async function handleToggleTriggerKey(key: TriggerKey, checked: boolean) {
+    const newKeys = checked ? (triggerKeys | key) : (triggerKeys & ~key);
+    if (newKeys === 0) return; // require at least one modifier
+    await storage.setItem<number>(TRIGGER_KEYS_STORAGE_KEY, newKeys);
+    setTriggerKeys(newKeys);
   }
 
   async function handleChangeCloseMode(value: string) {
@@ -133,51 +135,56 @@ function App() {
                 <Label className="text-sm font-normal text-muted-foreground">
                   {t("triggerKeyTitle")}
                 </Label>
-                <RadioGroup
-                  value={triggerKey}
-                  onValueChange={handleChangeTriggerKey}
-                  className="flex flex-row space-x-2"
-                >
+                <div className="flex flex-row space-x-2">
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem
-                      value={TriggerKey.SHIFT}
+                    <Checkbox
                       id="trigger-shift"
+                      checked={!!(triggerKeys & TriggerKey.SHIFT)}
+                      onCheckedChange={(checked) =>
+                        handleToggleTriggerKey(TriggerKey.SHIFT, !!checked)
+                      }
                     />
-                    <Label
-                      htmlFor="trigger-shift"
-                      className="font-semibold text-sm"
-                    >
+                    <Label htmlFor="trigger-shift" className="text-sm">
                       {t("triggerKeyShift")}
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value={TriggerKey.ALT} id="trigger-alt" />
-                    <Label
-                      htmlFor="trigger-alt"
-                      className="font-normal text-sm"
-                    >
+                    <Checkbox
+                      id="trigger-alt"
+                      checked={!!(triggerKeys & TriggerKey.ALT)}
+                      onCheckedChange={(checked) =>
+                        handleToggleTriggerKey(TriggerKey.ALT, !!checked)
+                      }
+                    />
+                    <Label htmlFor="trigger-alt" className="text-sm">
                       {t("triggerKeyAlt")}
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value={TriggerKey.CTRL} id="trigger-ctrl" />
-                    <Label
-                      htmlFor="trigger-ctrl"
-                      className="font-normal text-sm"
-                    >
+                    <Checkbox
+                      id="trigger-ctrl"
+                      checked={!!(triggerKeys & TriggerKey.CTRL)}
+                      onCheckedChange={(checked) =>
+                        handleToggleTriggerKey(TriggerKey.CTRL, !!checked)
+                      }
+                    />
+                    <Label htmlFor="trigger-ctrl" className="text-sm">
                       {t("triggerKeyCtrl")}
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value={TriggerKey.META} id="trigger-meta" />
-                    <Label
-                      htmlFor="trigger-meta"
-                      className="font-normal text-sm"
-                    >
+                    <Checkbox
+                      id="trigger-meta"
+                      checked={!!(triggerKeys & TriggerKey.META)}
+                      onCheckedChange={(checked) =>
+                        handleToggleTriggerKey(TriggerKey.META, !!checked)
+                      }
+                    />
+                    <Label htmlFor="trigger-meta" className="text-sm">
                       {t("triggerKeyMeta")}
                     </Label>
                   </div>
-                </RadioGroup>
+                </div>
               </div>
             )}
             <div className="flex items-center space-x-2">
